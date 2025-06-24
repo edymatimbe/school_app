@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:school_app/services/auth_service.dart';
 import 'package:school_app/signup_screen.dart';
-import 'package:school_app/views/admin/admin_screen.dart';
-import 'package:school_app/views/home_screen.dart';
-import 'package:school_app/views/student/student_screen.dart';
-import 'package:school_app/views/teacher/teacher_screen.dart';
+import 'package:school_app/features/admin/views/dashboard/admin_screen.dart';
+import 'package:school_app/features/student/student_screen.dart';
+import 'package:school_app/features/teacher/teacher_screen.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({Key? key}) : super(key: key);

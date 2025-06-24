@@ -1,44 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:school_app/views/admin/students/admin_students_create_screen.dart';
+import 'package:school_app/features/admin/views/students/admin_students_create_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:school_app/features/admin/views/teachers/admin_teachers_create_screen.dart';
 
-class Student {
+class Teacher {
   final String name;
   final String username;
   final String id;
   final String email;
-  final int grade;
+  final String course;
   final double gpa;
   final int semester;
   final String avatarUrl;
 
-  Student({
+  Teacher({
     required this.name,
     required this.username,
     required this.id,
     required this.email,
-    required this.grade,
+    required this.course,
     required this.gpa,
     required this.semester,
     required this.avatarUrl,
   });
 }
 
-class AdminStudentsScreen extends StatefulWidget {
-  const AdminStudentsScreen({super.key});
+class AdminTeachersScreen extends StatefulWidget {
+  const AdminTeachersScreen({super.key});
 
   @override
-  State<AdminStudentsScreen> createState() => _AdminStudentsScreenState();
+  State<AdminTeachersScreen> createState() => _AdminTeachersScreenState();
 }
 
-class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
-  final List<Student> students = [
-    Student(
-      name: 'Estudante ',
-      username: 'Estudante',
-      id: 'ST001',
-      email: '04/05/2025',
-      grade: 10,
+class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
+  final List<Teacher> teachers = [
+    Teacher(
+      name: 'Professor',
+      username: 'professor',
+      id: 'TC001',
+      email: '20/05/2025',
+      course: 'Matemática',
       gpa: 7,
       semester: 2,
       avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
@@ -63,19 +64,19 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           ),
         ),
         title: const Text(
-          'Todos os Estudantes',
+          'Todos os Professores',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color.fromARGB(255, 255, 68, 68),
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: students.length,
+        itemCount: teachers.length,
         separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
-          final student = students[index];
+          final teacher = teachers[index];
           return GestureDetector(
-            onTap: () => _showStudentDetails(context, student),
+            onTap: () => _showTeacherDetails(context, teacher),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -94,7 +95,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundImage: NetworkImage(student.avatarUrl),
+                      backgroundImage: NetworkImage(teacher.avatarUrl),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -102,7 +103,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            student.name,
+                            teacher.name,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -114,23 +115,9 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                               style: DefaultTextStyle.of(context).style,
                               children: <InlineSpan>[
                                 TextSpan(
-                                  text: '${student.grade}',
+                                  text: teacher.course,
                                   style: const TextStyle(fontSize: 16),
                                 ), // Normal text
-                                WidgetSpan(
-                                  alignment: PlaceholderAlignment.top,
-                                  child: Transform.translate(
-                                    offset: const Offset(0, -5),
-                                    child: Text(
-                                      "a",
-                                      style: const TextStyle(fontSize: 10),
-                                    ),
-                                  ),
-                                ),
-                                const TextSpan(
-                                  text: " Classe",
-                                  style: TextStyle(fontSize: 16),
-                                ),
                               ],
                             ),
                           ),
@@ -139,13 +126,13 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                             children: [
                               _buildInfoChip(
                                 icon: Icons.school,
-                                text: 'Semestre ${student.semester}',
+                                text: 'Semestre ${teacher.semester}',
                               ),
                               const SizedBox(width: 8),
                               _buildInfoChip(
                                 icon: Icons.star,
-                                text: 'Turma ${student.gpa}',
-                                color: _getGpaColor(student.gpa),
+                                text: 'Turma ${teacher.gpa}',
+                                color: _getGpaColor(teacher.gpa),
                               ),
                             ],
                           ),
@@ -165,7 +152,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const AdminStudentsCreateScreen(),
+              builder: (context) => const AdminTeachersCreateScreen(),
             ),
           );
         },
@@ -206,7 +193,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     return Colors.orange;
   }
 
-  void _showStudentDetails(BuildContext context, Student student) {
+  void _showTeacherDetails(BuildContext context, Teacher teacher) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -224,12 +211,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
               Center(
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage(student.avatarUrl),
+                  backgroundImage: NetworkImage(teacher.avatarUrl),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                student.name,
+                teacher.name,
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -240,7 +227,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   style: DefaultTextStyle.of(context).style,
                   children: <InlineSpan>[
                     TextSpan(
-                      text: '${student.grade}',
+                      text: teacher.course,
                       style: const TextStyle(fontSize: 20),
                     ), // Normal text
                     WidgetSpan(
@@ -259,15 +246,15 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
               ),
 
               const SizedBox(height: 24),
-              _buildDetailRow(Icons.person, 'Username', student.username),
-              _buildDetailRow(Icons.badge, 'Codigo', student.id),
-              _buildDetailRow(Icons.email, 'Data de Nascimento', student.email),
+              _buildDetailRow(Icons.person, 'Username', teacher.username),
+              _buildDetailRow(Icons.badge, 'Codigo', teacher.id),
+              _buildDetailRow(Icons.email, 'Data de Nascimento', teacher.email),
               _buildDetailRow(
                 Icons.school,
                 'Semestre',
-                'Semestre ${student.semester}',
+                'Semestre ${teacher.semester}',
               ),
-              _buildDetailRow(Icons.star, 'Turma', student.gpa.toString()),
+              _buildDetailRow(Icons.star, 'Turma', teacher.gpa.toString()),
               const Spacer(),
               SizedBox(
                 width: double.infinity,

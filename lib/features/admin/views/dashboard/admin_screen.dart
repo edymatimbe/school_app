@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:school_app/signin_screen.dart';
-import 'package:school_app/views/admin/disciplines/admin_disciplines_screen.dart';
-import 'package:school_app/views/admin/levels/admin_levels_screen.dart';
-import 'package:school_app/views/admin/students/admin_students_screen.dart';
-import 'package:school_app/views/admin/teachers/admin_teachers_screen.dart';
+import 'package:school_app/features/admin/views/disciplines/admin_disciplines_screen.dart';
+import 'package:school_app/features/admin/views/levels/admin_levels_screen.dart';
+import 'package:school_app/features/admin/views/students/admin_students_screen.dart';
+import 'package:school_app/features/admin/views/teachers/admin_teachers_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});

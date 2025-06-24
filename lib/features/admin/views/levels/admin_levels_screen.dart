@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:school_app/views/admin/levels/admin_levels_create_screen.dart';
+import 'package:school_app/features/admin/views/levels/admin_levels_create_screen.dart';
 
 class Level {
   final String id;

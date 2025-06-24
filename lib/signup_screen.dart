@@ -11,7 +11,7 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   String? role;
-  final nameController = TextEditingController();
+  final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isLoading = false;
@@ -25,7 +25,7 @@ class _SignupScreenState extends State<SignupScreen> {
     });
 
     String? result = await _authService.signup(
-      name: nameController.text,
+      username: usernameController.text,
       email: emailController.text,
       password: passwordController.text,
       role: 'student',
@@ -76,8 +76,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 SizedBox(
                   height: 50,
                   child: _buildTextField(
-                    controller: nameController,
-                    hint: 'Name',
+                    controller: usernameController,
+                    hint: 'Username',
                     icon: Icons.person,
                   ),
                 ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:school_app/views/admin/disciplines/admin_disciplines_create_screen.dart';
+import 'package:school_app/features/admin/views/disciplines/admin_disciplines_create_screen.dart';
 
 class Discipline {
   final String id;

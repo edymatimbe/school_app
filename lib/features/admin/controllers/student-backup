@@ -1,0 +1,113 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:school_app/features/admin/models/students_model.dart';
+
+final addStudentProvider = StateNotifierProvider<StudentNotifier, Student>(
+  (ref) => StudentNotifier(),
+);
+
+class StudentNotifier extends StateNotifier<Student> {
+  StudentNotifier() : super(Student());
+
+  final CollectionReference _studentsCollection = FirebaseFirestore.instance
+      .collection('students');
+
+  void pickImage() async {
+    try {
+      final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 50,
+      );
+
+      if (pickedFile != null) {
+        state = state.copyWith(imagePath: pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
+
+  void setUsername(String username) {
+    state = state.copyWith(username: username);
+  }
+
+  void setFullName(String fullname) {
+    state = state.copyWith(fullname: fullname);
+  }
+
+  void setEmail(String email) {
+    state = state.copyWith(email: email);
+  }
+
+  void setBirthdate(DateTime birthdate) {
+    state = state.copyWith(birthdate: birthdate);
+  }
+
+  void setGender(Gender gender) {
+    state = state.copyWith(gender: gender);
+  }
+
+  void setNationality(String nationality) {
+    state = state.copyWith(nationality: nationality);
+  }
+
+  void setAddress(String address) {
+    state = state.copyWith(address: address);
+  }
+
+  void setPhone(String phone) {
+    state = state.copyWith(phone: phone);
+  }
+
+  void setLoading(bool isLoading) {
+    state = state.copyWith(isLoading: isLoading);
+  }
+
+  Future<void> addStudent() async {
+    setLoading(true);
+
+    if (state.fullname == null ||
+        state.username == null ||
+        state.birthdate == null ||
+        state.gender == null ||
+        state.address == null ||
+        state.phone == null ||
+        state.email == null) {
+      throw Exception('All fields are required');
+    }
+
+    try {
+      final fileName = DateTime.now().millisecondsSinceEpoch.toString();
+      final reference = FirebaseStorage.instance.ref().child(
+        '/students_images/$fileName',
+      );
+      await reference.putFile(File(state.imagePath!));
+      final imageUrl = await reference.getDownloadURL();
+
+      await _studentsCollection.add({
+        'id': fileName,
+        'fullname': state.fullname,
+        'username': state.username,
+        'birthdate': state.birthdate,
+        'gender': state.gender,
+        'nationality': state.nationality,
+        'address': state.address,
+        'phone': state.phone,
+        'imagePath': imageUrl,
+      });
+      state = Student(); //
+    } catch (e) {
+      print('Error adding student: $e');
+      throw Exception('Failed to add student');
+    } finally {
+      setLoading(false);
+    }
+  }
+}
+ 
