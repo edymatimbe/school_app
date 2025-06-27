@@ -14,7 +14,7 @@ class AdminScreen extends StatefulWidget {
 
 class _AdminScreenState extends State<AdminScreen> {
   final List<_FeatureItem> features = [
-    _FeatureItem('Estudantes', Icons.person_3, AdminStudentsScreen()),
+    _FeatureItem('Estudantes', Icons.file_copy, AdminStudentsScreen()),
     _FeatureItem('Professores', Icons.person_4_rounded, AdminTeachersScreen()),
     _FeatureItem('Classes', Icons.calendar_month, AdminLevelsScreen()),
     _FeatureItem('Disciplinas', Icons.calendar_month, AdminDisciplinesScreen()),

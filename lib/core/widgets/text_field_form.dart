@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TextFieldForm extends StatelessWidget {
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final String label;
   final String? hint;
   final String? hintText;
@@ -12,7 +12,7 @@ class TextFieldForm extends StatelessWidget {
 
   const TextFieldForm({
     super.key,
-    required this.controller,
+    this.controller,
     required this.label,
     this.hint,
     this.hintText,

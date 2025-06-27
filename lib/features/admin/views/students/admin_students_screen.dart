@@ -116,7 +116,13 @@ class AdminStudentsScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      _buildInfoChip(icon: Icons.school, text: 'Semestre 10'),
+                      _buildInfoChip(
+                        icon: Icons.school,
+                        text:
+                            student.semester != 0
+                                ? '${student.semester} Semestre'
+                                : '-',
+                      ),
                       const SizedBox(width: 8),
                       _buildInfoChip(
                         icon: Icons.star,
@@ -210,7 +216,15 @@ class AdminStudentsScreen extends StatelessWidget {
                     ? DateFormat('dd/MM/yyyy').format(student.birthdate!)
                     : '',
               ),
-              _buildDetailRow(Icons.star, 'Genero', 'Male'),
+              _buildDetailRow(
+                Icons.star,
+                'Genero',
+                student.gender != null
+                    ? student
+                        .gender!
+                        .name // ou student.gender.toString().split('.').last
+                    : '-',
+              ),
               _buildDetailRow(
                 Icons.school,
                 'Nacionalidade',
@@ -231,7 +245,7 @@ class AdminStudentsScreen extends StatelessWidget {
               _buildDetailRow(
                 Icons.school,
                 'Semestre',
-                student.semester ?? '-',
+                student.semester != null ? student.semester.toString() : '-',
               ),
 
               _buildDetailRow(Icons.email, 'Email', student.email ?? '-'),

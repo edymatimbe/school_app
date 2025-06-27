@@ -13,7 +13,8 @@ class StudentState {
   final String? imagePath;
   final int? grade;
   final double? gpa;
-  final String? semester;
+  final int? semester;
+  final int? classroom;
   final String? username;
   final String? email;
   final String? password;
@@ -31,6 +32,7 @@ class StudentState {
     this.grade,
     this.gpa,
     this.semester,
+    this.classroom,
     this.username,
     this.email,
     this.password,
@@ -60,6 +62,7 @@ class StudentState {
       gpa: map['gpa'] != null ? (map['gpa'] as num).toDouble() : null,
       grade: map['grade'],
       semester: map['semester'],
+      classroom: map['classroom'],
     );
   }
 
@@ -75,7 +78,8 @@ class StudentState {
     String? imagePath,
     double? gpa,
     int? grade,
-    String? semester,
+    int? semester,
+    int? classroom,
     bool? isLoading,
     String? email,
     String? password,

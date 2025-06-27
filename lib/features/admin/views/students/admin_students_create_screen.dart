@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,17 +9,19 @@ import 'package:school_app/features/admin/controllers/student_controller.dart';
 
 import '../../models/students_model.dart';
 
-class AdminStudentsCreateScreen extends ConsumerWidget {
-  AdminStudentsCreateScreen({super.key});
-  final fullNameController = TextEditingController();
-  final genderController = TextEditingController();
-  final nationalityController = TextEditingController();
-  final addressController = TextEditingController();
-  final phoneController = TextEditingController();
+final isPasswordHiddenProvider = StateProvider<bool>((ref) => true);
 
-  final usernameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+class AdminStudentsCreateScreen extends ConsumerWidget {
+  const AdminStudentsCreateScreen({super.key});
+  // final fullNameController = TextEditingController();
+  // final genderController = TextEditingController();
+  // final nationalityController = TextEditingController();
+  // final addressController = TextEditingController();
+  // final phoneController = TextEditingController();
+
+  // final usernameController = TextEditingController();
+  // final emailController = TextEditingController();
+  // final passwordController = TextEditingController();
 
   // Future<void> _selectBirthdate(BuildContext context) async {
   //   final DateTime? picked = await showDatePicker(
@@ -36,12 +36,7 @@ class AdminStudentsCreateScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(studentProvider);
     final notifier = ref.read(studentProvider.notifier);
-    final birthdateController = TextEditingController(
-      text:
-          state.birthdate != null
-              ? DateFormat('dd/MM/yyyy').format(state.birthdate!)
-              : '',
-    );
+    final isPasswordHidden = ref.watch(isPasswordHiddenProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -66,58 +61,38 @@ class AdminStudentsCreateScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(height: 15),
-              Center(
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey[300],
+              state.imagePath != null
+                  ? Image.file(File(state.imagePath!), height: 200)
+                  : const Text(
+                    'Sem imagem selecionada.',
+                    textAlign: TextAlign.center,
                   ),
-                  child:
-                      state.imagePath != null
-                          ? ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.file(
-                              File(state.imagePath!),
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                          : (state.isLoading)
-                          ? CircularProgressIndicator()
-                          : GestureDetector(
-                            onTap: notifier.pickImage,
-                            child: const Icon(Icons.camera),
-                          ),
-                ),
+              ElevatedButton(
+                onPressed: notifier.pickImage,
+                child: const Text("Selecionar Imagem"),
               ),
-
               SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 20,
-                child: Text('Dados do aluno', style: TextStyle(fontSize: 16)),
-              ),
-              SizedBox(height: 10),
+
               TextFieldForm(
-                controller: fullNameController,
                 label: 'Nome Completo',
                 icon: Icons.person_2_outlined,
                 onChanged: (value) => notifier.setFullName(value),
               ),
               SizedBox(height: 15),
               TextField(
-                controller: birthdateController,
                 readOnly: true,
                 decoration: InputDecoration(
-                  label: Text(
-                    'Data de Nascimento',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  prefixIcon: const Icon(Icons.date_range_outlined),
+                  hintText:
+                      state.birthdate != null
+                          ? '${state.birthdate!.day.toString().padLeft(2, '0')}/'
+                              '${state.birthdate!.month.toString().padLeft(2, '0')}/'
+                              '${state.birthdate!.year}'
+                          : 'Data de Nascimento',
                   filled: true,
                   fillColor: Colors.white,
                   contentPadding: const EdgeInsets.all(16),
@@ -129,6 +104,7 @@ class AdminStudentsCreateScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.grey.shade300),
                   ),
+                  suffixIcon: const Icon(Icons.calendar_today),
                 ),
                 onTap: () async {
                   final DateTime? picked = await showDatePicker(
@@ -137,7 +113,6 @@ class AdminStudentsCreateScreen extends ConsumerWidget {
                     firstDate: DateTime(1900),
                     lastDate: DateTime.now(),
                   );
-
                   if (picked != null) {
                     notifier.setBirthdate(picked);
                   }
@@ -186,76 +161,136 @@ class AdminStudentsCreateScreen extends ConsumerWidget {
               ),
               SizedBox(height: 15),
               TextFieldForm(
-                controller: nationalityController,
                 label: 'Nacionalidade',
                 icon: Icons.rectangle_outlined,
                 onChanged: (value) => notifier.setNationality(value),
               ),
               SizedBox(height: 15),
               TextFieldForm(
-                controller: addressController,
                 label: 'Endereço',
                 icon: Icons.pin_drop_outlined,
                 onChanged: (value) => notifier.setAddress(value),
               ),
               SizedBox(height: 15),
               TextFieldForm(
-                controller: phoneController,
                 label: 'Telefone',
                 icon: Icons.phone_outlined,
                 onChanged: (value) => notifier.setPhone(value),
               ),
               SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 20,
-                child: Text('Dados de acesso', style: TextStyle(fontSize: 16)),
+              const Text(
+                'Dados de Acesso',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
               TextFieldForm(
-                controller: usernameController,
                 label: 'Nome de Utilizador',
                 icon: Icons.person_2_outlined,
-                onChanged: (value) => notifier.setUsername(value),
+                onChanged: notifier.setUsername,
               ),
               SizedBox(height: 15),
               TextFieldForm(
-                controller: emailController,
                 label: 'Email',
                 icon: Icons.email_outlined,
-                onChanged: (value) => notifier.setEmail(value),
+                onChanged: notifier.setEmail,
               ),
               SizedBox(height: 15),
-              TextFieldForm(
-                controller: passwordController,
-                label: 'Palavra-passe',
-                icon: Icons.lock_outline,
-                obscure: true,
+              _buildTextField(
+                hint: 'Palavra-Passe',
+                obscure: isPasswordHidden,
+                onChanged: notifier.setPassword,
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    ref.read(isPasswordHiddenProvider.notifier).state =
+                        !isPasswordHidden;
+                  },
+                  icon: Icon(
+                    isPasswordHidden ? Icons.visibility_off : Icons.visibility,
+                  ),
+                ),
               ),
 
-              ButtonForm(
-                onTab: () async {
-                  try {
-                    await notifier.addStudent(
-                      fullNameController.text,
-                      usernameController.text,
-                      nationalityController.text,
-                      addressController.text,
-                      phoneController.text,
-                      emailController.text,
-                      passwordController.text,
-                    );
-                    showSnackBar(context, 'ALuno adicionado com sucesso');
-                    Navigator.of(context).pop();
-                  } catch (e) {
-                    showSnackBar(context, 'Error: $e');
-                  }
-                },
-                text: 'Guardar',
-              ),
+              // ButtonForm(
+              //   onTab: () async {
+              //     try {
+              //       await notifier.addStudent();
+              //       showSnackBar(context, 'ALuno adicionado com sucesso');
+              //       Navigator.of(context).pop();
+              //     } catch (e) {
+              //       showSnackBar(context, 'Error: $e');
+              //     }
+              //   },
+              //   text: 'Guardar',
+              // ),
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SizedBox(
+          height: 50,
+          child: ElevatedButton(
+            onPressed:
+                state.isLoading
+                    ? null
+                    : () async {
+                      try {
+                        await notifier.addStudent();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Professor criado com sucesso!'),
+                            ),
+                          );
+                          Navigator.pop(context);
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Erro: ${e.toString()}')),
+                          );
+                        }
+                      }
+                    },
+            child:
+                state.isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Guardar', style: TextStyle(fontSize: 16)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String hint,
+    required Function(String) onChanged,
+    TextInputType? keyboardType,
+    bool obscure = false,
+    Widget? suffixIcon,
+  }) {
+    return TextField(
+      onChanged: onChanged,
+      obscureText: obscure,
+      keyboardType: keyboardType,
+      decoration: _inputDecoration(hint).copyWith(suffixIcon: suffixIcon),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.all(16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
       ),
     );
   }

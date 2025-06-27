@@ -1,50 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:school_app/features/admin/views/students/admin_students_create_screen.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:school_app/features/admin/models/teachers_model.dart';
 import 'package:school_app/features/admin/views/teachers/admin_teachers_create_screen.dart';
 
-class Teacher {
-  final String name;
-  final String username;
-  final String id;
-  final String email;
-  final String course;
-  final double gpa;
-  final int semester;
-  final String avatarUrl;
+class AdminTeachersScreen extends StatelessWidget {
+  AdminTeachersScreen({super.key});
 
-  Teacher({
-    required this.name,
-    required this.username,
-    required this.id,
-    required this.email,
-    required this.course,
-    required this.gpa,
-    required this.semester,
-    required this.avatarUrl,
-  });
-}
-
-class AdminTeachersScreen extends StatefulWidget {
-  const AdminTeachersScreen({super.key});
-
-  @override
-  State<AdminTeachersScreen> createState() => _AdminTeachersScreenState();
-}
-
-class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
-  final List<Teacher> teachers = [
-    Teacher(
-      name: 'Professor',
-      username: 'professor',
-      id: 'TC001',
-      email: '20/05/2025',
-      course: 'Matemática',
-      gpa: 7,
-      semester: 2,
-      avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
-    ),
-  ];
+  final CollectionReference teachersCollection = FirebaseFirestore.instance
+      .collection('teachers');
 
   @override
   Widget build(BuildContext context) {
@@ -52,11 +17,11 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color.fromARGB(255, 255, 68, 68),
-                const Color.fromARGB(255, 195, 129, 48),
+                Color.fromARGB(255, 255, 68, 68),
+                Color.fromARGB(255, 195, 129, 48),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -69,81 +34,39 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
         ),
         backgroundColor: const Color.fromARGB(255, 255, 68, 68),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: teachers.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final teacher = teachers[index];
-          return GestureDetector(
-            onTap: () => _showTeacherDetails(context, teacher),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundImage: NetworkImage(teacher.avatarUrl),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            teacher.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          RichText(
-                            text: TextSpan(
-                              style: DefaultTextStyle.of(context).style,
-                              children: <InlineSpan>[
-                                TextSpan(
-                                  text: teacher.course,
-                                  style: const TextStyle(fontSize: 16),
-                                ), // Normal text
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              _buildInfoChip(
-                                icon: Icons.school,
-                                text: 'Semestre ${teacher.semester}',
-                              ),
-                              const SizedBox(width: 8),
-                              _buildInfoChip(
-                                icon: Icons.star,
-                                text: 'Turma ${teacher.gpa}',
-                                color: _getGpaColor(teacher.gpa),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(Icons.chevron_right, color: Colors.grey[400]),
-                  ],
-                ),
-              ),
-            ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: teachersCollection.snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('Nenhum professor encontrado.'));
+          }
+
+          // Converte documentos Firestore em lista de TeacherState
+          final teachers =
+              snapshot.data!.docs.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                // Converte timestamp Firestore para DateTime se necessário
+                if (data['birthdate'] is Timestamp) {
+                  data['birthdate'] = (data['birthdate'] as Timestamp).toDate();
+                }
+                return TeacherState.fromMap(data);
+              }).toList();
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: teachers.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final teacher = teachers[index];
+              return GestureDetector(
+                onTap: () => _showTeacherDetails(context, teacher),
+                child: _buildTeacherCard(context, teacher),
+              );
+            },
           );
         },
       ),
@@ -156,8 +79,79 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
             ),
           );
         },
-
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildTeacherCard(BuildContext context, TeacherState teacher) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundImage:
+                  teacher.imagePath != null && teacher.imagePath!.isNotEmpty
+                      ? NetworkImage(teacher.imagePath!)
+                      : null,
+              child:
+                  teacher.imagePath == null || teacher.imagePath!.isEmpty
+                      ? const Icon(Icons.person, size: 30)
+                      : null,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    teacher.fullName ?? '',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  // Exemplo estático - ajuste conforme seu modelo
+                  Text('Professor de ${teacher.subject}'),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      _buildInfoChip(
+                        icon: Icons.school,
+                        text:
+                            teacher.yearsOfExperience != null &&
+                                    teacher.yearsOfExperience! > 0
+                                ? '${teacher.yearsOfExperience} anos de experiência'
+                                : '-',
+                      ),
+                      const SizedBox(width: 8),
+                      _buildInfoChip(
+                        icon: Icons.star,
+                        text: 'Turma 3',
+                        color: _getGpaColor(0.0),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey[400]),
+          ],
+        ),
       ),
     );
   }
@@ -193,7 +187,7 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
     return Colors.orange;
   }
 
-  void _showTeacherDetails(BuildContext context, Teacher teacher) {
+  void _showTeacherDetails(BuildContext context, TeacherState teacher) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -211,50 +205,56 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
               Center(
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage(teacher.avatarUrl),
+                  backgroundImage:
+                      teacher.imagePath != null && teacher.imagePath!.isNotEmpty
+                          ? NetworkImage(teacher.imagePath!)
+                          : null,
+                  child:
+                      teacher.imagePath == null || teacher.imagePath!.isEmpty
+                          ? const Icon(Icons.person, size: 50)
+                          : null,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                teacher.name,
+                teacher.fullName ?? '',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              RichText(
-                text: TextSpan(
-                  style: DefaultTextStyle.of(context).style,
-                  children: <InlineSpan>[
-                    TextSpan(
-                      text: teacher.course,
-                      style: const TextStyle(fontSize: 20),
-                    ), // Normal text
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.top,
-                      child: Transform.translate(
-                        offset: const Offset(0, -9),
-                        child: Text("a", style: const TextStyle(fontSize: 12)),
-                      ),
-                    ),
-                    const TextSpan(
-                      text: " Classe",
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ],
-                ),
-              ),
-
               const SizedBox(height: 24),
-              _buildDetailRow(Icons.person, 'Username', teacher.username),
-              _buildDetailRow(Icons.badge, 'Codigo', teacher.id),
-              _buildDetailRow(Icons.email, 'Data de Nascimento', teacher.email),
+              _buildDetailRow(Icons.badge, 'Código', teacher.id ?? ''),
+              _buildDetailRow(
+                Icons.person,
+                'Nome completo',
+                teacher.fullName ?? '',
+              ),
+              _buildDetailRow(
+                Icons.star,
+                'Data de nascimento',
+                teacher.birthdate != null
+                    ? DateFormat('dd/MM/yyyy').format(teacher.birthdate!)
+                    : '-',
+              ),
+              _buildDetailRow(
+                Icons.star,
+                'Gênero',
+                teacher.gender?.toString() ?? '-',
+              ),
               _buildDetailRow(
                 Icons.school,
-                'Semestre',
-                'Semestre ${teacher.semester}',
+                'Nacionalidade',
+                teacher.nationality ?? '-',
               ),
-              _buildDetailRow(Icons.star, 'Turma', teacher.gpa.toString()),
+              _buildDetailRow(Icons.home, 'Endereço', teacher.address ?? '-'),
+              _buildDetailRow(Icons.phone, 'Telefone', teacher.phone ?? '-'),
+              _buildDetailRow(
+                Icons.work,
+                'Anos de Experiência',
+                teacher.yearsOfExperience?.toString() ?? '-',
+              ),
+              _buildDetailRow(Icons.book, 'Disciplina', teacher.subject ?? '-'),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
@@ -283,21 +283,23 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
         children: [
           Icon(icon, color: Colors.indigo),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                 ),
-              ),
-            ],
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -43,6 +43,9 @@ class StudentNotifier extends StateNotifier<StudentState> {
     state = state.copyWith(fullName: fullName);
   }
 
+  void setPassword(String password) =>
+      state = state.copyWith(password: password);
+
   void setEmail(String email) {
     state = state.copyWith(email: email);
   }
@@ -75,23 +78,15 @@ class StudentNotifier extends StateNotifier<StudentState> {
     state = state.copyWith(grade: grade);
   }
 
-  void setSemester(String semester) {
+  void setSemester(int semester) {
     state = state.copyWith(semester: semester);
   }
 
-  void setLoading(bool isLoading) {
-    state = state.copyWith(isLoading: isLoading);
+  void setLoading(bool value) {
+    state = state.copyWith(isLoading: value);
   }
 
-  Future<void> addStudent(
-    String fullName,
-    String username,
-    String nationality,
-    String address,
-    String phone,
-    String email,
-    String password, // ADICIONAR ISSO
-  ) async {
+  Future<void> addStudent() async {
     setLoading(true);
     // 👉 LOG DE TODOS OS VALORES
     print('--- DADOS DO ESTUDANTE ---');
@@ -115,13 +110,20 @@ class StudentNotifier extends StateNotifier<StudentState> {
     }
 
     try {
+      if (state.fullName == null ||
+          state.username == null ||
+          state.email == null ||
+          state.password == null) {
+        throw Exception('Campos obrigatórios ausentes');
+      }
+
       String? imageUrl;
       final authService = AuthService();
 
       final error = await authService.signup(
-        username: username,
-        email: email,
-        password: password,
+        username: state.username!,
+        email: state.email!,
+        password: state.password!,
         role: 'student',
       );
 
@@ -137,7 +139,7 @@ class StudentNotifier extends StateNotifier<StudentState> {
 
         final fileName = DateTime.now().millisecondsSinceEpoch.toString();
         final reference = FirebaseStorage.instance.ref().child(
-          'image/$fileName',
+          'students/$fileName',
         );
 
         final uploadTask = await reference.putFile(imageFile);
@@ -159,7 +161,7 @@ class StudentNotifier extends StateNotifier<StudentState> {
         'phone': state.phone,
         'grade': state.grade ?? 0,
         'gpa': state.gpa ?? 0.00,
-        'semester': state.semester ?? "",
+        'semester': state.semester ?? 0,
         if (imageUrl != null) 'imagePath': imageUrl,
       };
 
