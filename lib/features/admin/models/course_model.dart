@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CourseState {
-  final int? id;
+  final String? id;
   final String? name;
   final String? description;
   final bool isLoading;
@@ -22,7 +22,7 @@ class CourseState {
   });
 
   CourseState copyWith({
-    int? id,
+    String? id,
     String? name,
     String? description,
     bool? isLoading,

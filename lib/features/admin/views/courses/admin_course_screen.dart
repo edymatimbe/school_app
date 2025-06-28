@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:school_app/common/widgets/app_bar.dart';
 import 'package:school_app/features/admin/models/course_model.dart';
+import 'package:school_app/features/admin/views/lessons/admin_lessons_screen.dart';
 
 class AdminCourseScreen extends StatelessWidget {
   AdminCourseScreen({super.key});
@@ -41,7 +42,19 @@ class AdminCourseScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final course = courses[index];
               return GestureDetector(
-                onTap: () => {},
+                onTap:
+                    () => {
+                      print('Hello getting the id${course.id}'),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => AdminLessonsScreen(
+                                courseId: course.id!,
+                              ), // Assuming course.id holds the courseId
+                        ),
+                      ),
+                    },
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
