@@ -1,40 +1,42 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:school_app/features/admin/views/courses/admin_course_screen.dart';
+import 'package:school_app/features/admin/views/media/admin_media_screen.dart';
 import 'package:school_app/signin_screen.dart';
-import 'package:school_app/features/admin/views/disciplines/admin_disciplines_screen.dart';
 import 'package:school_app/features/admin/views/levels/admin_levels_screen.dart';
 import 'package:school_app/features/admin/views/students/admin_students_screen.dart';
 import 'package:school_app/features/admin/views/teachers/admin_teachers_screen.dart';
+import 'package:school_app/features/admin/controllers/auth_controller.dart';
 
-class AdminScreen extends StatefulWidget {
-  const AdminScreen({super.key});
+class AdminScreen extends ConsumerWidget {
+  AdminScreen({super.key});
 
-  @override
-  State<AdminScreen> createState() => _AdminScreenState();
-}
-
-class _AdminScreenState extends State<AdminScreen> {
+  // ignore: library_private_types_in_public_api
   final List<_FeatureItem> features = [
     _FeatureItem('Estudantes', Icons.file_copy, AdminStudentsScreen()),
     _FeatureItem('Professores', Icons.person_4_rounded, AdminTeachersScreen()),
     _FeatureItem('Classes', Icons.calendar_month, AdminLevelsScreen()),
-    _FeatureItem('Disciplinas', Icons.calendar_month, AdminDisciplinesScreen()),
+    _FeatureItem('Disciplinas', Icons.calendar_month, AdminCourseScreen()),
     _FeatureItem('Horários', Icons.calendar_month, AdminStudentsScreen()),
-    _FeatureItem('Media', Icons.file_copy, AdminStudentsScreen()),
+    _FeatureItem('Media', Icons.file_copy, AdminMediaScreen()),
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userSnapshot = ref.watch(currentUserProvider);
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 252, 252, 252),
       body: Stack(
         children: [
           Container(
             height: MediaQuery.of(context).padding.top,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color.fromARGB(255, 255, 68, 68),
-                  const Color.fromARGB(255, 195, 129, 48),
+                  Color.fromARGB(255, 255, 68, 68),
+                  Color.fromARGB(255, 195, 129, 48),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -44,54 +46,67 @@ class _AdminScreenState extends State<AdminScreen> {
           SafeArea(
             child: Column(
               children: [
-                // Header com imagem
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color.fromARGB(255, 255, 68, 68),
-                        const Color.fromARGB(255, 195, 129, 48),
+                        Color.fromARGB(255, 255, 68, 68),
+                        Color.fromARGB(255, 195, 129, 48),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: const BorderRadius.only(
+                    borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(30),
                       bottomRight: Radius.circular(30),
                     ),
                   ),
                   child: Row(
                     children: [
-                      CircleAvatar(
+                      const CircleAvatar(
                         radius: 35,
                         backgroundImage: NetworkImage(
-                          'https://i.pravatar.cc/150?img=3', // imagem de exemplo
+                          'https://i.pravatar.cc/150?img=3',
                         ),
                       ),
                       const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Olá, Admin !',
-                            style: TextStyle(
-                              fontSize: 20,
+                      userSnapshot.when(
+                        data: (doc) {
+                          final name = doc.data()?['username'] ?? 'Admin';
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Olá, $name!',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Text(
+                                'Bem-vindo de volta 👋',
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                            ],
+                          );
+                        },
+                        loading:
+                            () => const CircularProgressIndicator(
                               color: Colors.white,
-                              fontWeight: FontWeight.bold,
                             ),
-                          ),
-                          Text(
-                            'Bem-vindo de volta 👋',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        ],
+                        error:
+                            (e, _) => const Text(
+                              'Erro ao carregar usuário',
+                              style: TextStyle(color: Colors.white),
+                            ),
                       ),
                     ],
                   ),
                 ),
-                // Espaço para grade
+
                 Expanded(
                   child: GridView.builder(
                     padding: const EdgeInsets.all(20),
@@ -140,14 +155,16 @@ class _AdminScreenState extends State<AdminScreen> {
                     },
                   ),
                 ),
+
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => SigninScreen()),
                     );
                   },
-                  child: Text('Sair'),
+                  child: const Text('Sair'),
                 ),
               ],
             ),
@@ -161,6 +178,6 @@ class _AdminScreenState extends State<AdminScreen> {
 class _FeatureItem {
   final String title;
   final IconData icon;
-  final dynamic route;
+  final Widget route;
   _FeatureItem(this.title, this.icon, this.route);
 }

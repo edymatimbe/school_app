@@ -100,14 +100,6 @@ class StudentNotifier extends StateNotifier<StudentState> {
     print('Telefone: ${state.phone}');
     print('Imagem: ${state.imagePath}');
     print('---------------------------');
-    if (state.fullName == null ||
-        state.username == null ||
-        state.nationality == null ||
-        state.address == null ||
-        state.phone == null ||
-        state.email == null) {
-      throw Exception('All fields are required');
-    }
 
     try {
       if (state.fullName == null ||

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:school_app/features/admin/controllers/auth_controller.dart';
 import 'package:school_app/signin_screen.dart';
 
-class StudentScreen extends StatelessWidget {
+class StudentScreen extends ConsumerWidget {
   const StudentScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userSnapshot = ref.watch(currentUserProvider);
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 252, 252, 252),
       body: Stack(
@@ -50,22 +54,36 @@ class StudentScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Olá, João!',
-                              style: TextStyle(
-                                fontSize: 20,
+                        userSnapshot.when(
+                          data: (doc) {
+                            final name = doc.data()?['username'] ?? 'Admin';
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Olá, $name!',
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Text(
+                                  'Bem-vindo de volta 👋',
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                              ],
+                            );
+                          },
+                          loading:
+                              () => const CircularProgressIndicator(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
-                            Text(
-                              'Bem-vindo de volta 👋',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ],
+                          error:
+                              (e, _) => const Text(
+                                'Erro ao carregar usuário',
+                                style: TextStyle(color: Colors.white),
+                              ),
                         ),
                       ],
                     ),
